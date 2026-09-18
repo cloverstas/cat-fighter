@@ -19,7 +19,9 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-ART_DIR = Path(__file__).resolve().parent.parent / "Assets" / "Art"
+PROJECT = Path(__file__).resolve().parent.parent
+ART_DIR = PROJECT / "Assets" / "Art"
+SOURCE = PROJECT / "SourceArt"   # исходники генераций — в проекте (Unity эту папку не видит, git хранит)
 
 CANVAS_W, CANVAS_H = 640, 512   # одинаковый холст для всех кадров
 CAT_HEIGHT = 400                # рост кота в стойке (в пикселях) после масштабирования
@@ -32,34 +34,34 @@ FLOOR_MARGIN = 16               # лапы стоят на 16 px выше ниж
 #   path       — полный путь к файлу (если лист лежит не в папке кота),
 #   pick       — какой кадр по счёту взять (0 — левый кот, 1 — правый),
 #   scale_like — взять масштаб у другой анимации этого кота (присед низкий — по нему рост не посчитать).
-BLOCK_SHEET = r"C:\Users\clover\Desktop\block.png"
-CROUCH_SHEET = r"C:\Users\clover\Desktop\prigibanie.png"
+BLOCK_SHEET = SOURCE / "Shared" / "block_sheet.png"
+CROUCH_SHEET = SOURCE / "Shared" / "crouch_sheet.png"
 CHARACTERS = {
     "murzik": dict(
-        src=Path(r"C:\Users\clover\Desktop\cats\MURZIK\murz"),
+        src=SOURCE / "Murzik",
         out="Murzik",
         sheets=[
-            dict(file="image 1.png", anim="idle", frames=4, label_bands=[(835, 910)]),
-            dict(file="2.png", anim="punch", frames=8, label_bands=[(445, 512), (932, 1000)]),
-            dict(file="3.png", anim="kick", frames=8, label_bands=[(386, 446), (810, 875)],
+            dict(file="idle_sheet.png", anim="idle", frames=4, label_bands=[(835, 910)]),
+            dict(file="punch_sheet.png", anim="punch", frames=8, label_bands=[(445, 512), (932, 1000)]),
+            dict(file="kick_sheet.png", anim="kick", frames=8, label_bands=[(386, 446), (810, 875)],
                  wipe=[(0, 391, 1774, 446)]),           # подпись KICK_04 слиплась с KICK_08 — стираем полосу целиком
-            dict(file="4.png", anim="hit", frames=8, label_bands=[(405, 485), (790, 870)],
+            dict(file="hit_sheet.png", anim="hit", frames=8, label_bands=[(405, 485), (790, 870)],
                  split=[(11, 540, 901, 800)],            # HIT_05 и HIT_06 слиплись — разделяем
                  wipe=[(1300, 400, 1774, 484)]),         # подпись HIT_04 слиплась с HIT_08
-            dict(file="win.png", anim="win", frames=4, label_bands=[], optional=True),  # победа — когда будет нарисована
+            dict(file="win_sheet.png", anim="win", frames=4, label_bands=[], optional=True),  # победа — когда будет нарисована
             dict(path=BLOCK_SHEET, anim="block", frames=2, pick=0, label_bands=[]),
             dict(path=CROUCH_SHEET, anim="crouch", frames=2, pick=0, label_bands=[], scale_like="block"),
         ],
     ),
     "belchik": dict(
-        src=Path(r"C:\Users\clover\Desktop\белчик"),
+        src=SOURCE / "Belchik",
         out="Belchik",
         sheets=[
-            dict(file="1.png", anim="idle", frames=4, label_bands=[(808, 925)], flip=True),  # стойка смотрит влево
-            dict(file="2.png", anim="punch", frames=8, label_bands=[]),
-            dict(file="3.png", anim="kick", frames=8, label_bands=[]),
-            dict(file="4.png", anim="hit", frames=8, label_bands=[]),
-            dict(file="win.png", anim="win", frames=4, label_bands=[], optional=True),
+            dict(file="idle_sheet.png", anim="idle", frames=4, label_bands=[(808, 925)], flip=True),  # стойка смотрит влево
+            dict(file="punch_sheet.png", anim="punch", frames=8, label_bands=[]),
+            dict(file="kick_sheet.png", anim="kick", frames=8, label_bands=[]),
+            dict(file="hit_sheet.png", anim="hit", frames=8, label_bands=[]),
+            dict(file="win_sheet.png", anim="win", frames=4, label_bands=[], optional=True),
             dict(path=BLOCK_SHEET, anim="block", frames=2, pick=1, label_bands=[], flip=True),
             dict(path=CROUCH_SHEET, anim="crouch", frames=2, pick=1, label_bands=[], flip=True, scale_like="block"),
         ],
