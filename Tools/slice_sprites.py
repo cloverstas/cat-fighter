@@ -65,7 +65,9 @@ CHARACTERS = {
             dict(file="kick_sheet.png", anim="kick", frames=8, label_bands=[]),
             dict(file="hit_sheet.png", anim="hit", frames=8, label_bands=[]),
             dict(file="walk_sheet.png", anim="walk", frames=6, label_bands=[], optional=True),
-            dict(file="super_sheet.png", anim="super", frames=8, label_bands=[], optional=True),
+            dict(file="super_sheet.png", anim="super", frames=8, label_bands=[], optional=True,  # "Белый вихрь"
+                 cut=[(1476, 180, 620)],           # взрыв кадра 5 заходит на кадр 6 — режем в самом узком месте
+                 canvas_w=1024),                   # ледяной взрыв на кадре удара очень широкий
             dict(file="win_sheet.png", anim="win", frames=4, label_bands=[], optional=True),
             dict(path=BLOCK_SHEET, anim="block", frames=2, pick=1, label_bands=[], flip=True),
             dict(path=CROUCH_SHEET, anim="crouch", frames=2, pick=1, label_bands=[], flip=True, scale_like="block"),
@@ -109,6 +111,9 @@ def find_frames(img, cfg):
     a = img
     for (x0, y0, x1, y1) in cfg.get("wipe", []):
         a[y0:y1, x0:x1] = 0
+    # Вертикальный разрез: стираем узкую полосу (шире, чем "склейка" дилатации ниже), чтобы кадры разошлись
+    for (x, y0, y1) in cfg.get("cut", []):
+        a[y0:y1, x - 7:x + 7] = 0
 
     mask = ndi.binary_dilation(a[..., 3] >= 24, iterations=4)
     lab, n = ndi.label(mask)
@@ -116,10 +121,13 @@ def find_frames(img, cfg):
         n = split_merged(a, lab, n, x0, y0, x1, y1)
     boxes = ndi.find_objects(lab)
 
+    # Кот — крупный объект: не меньше трети самого большого на листе (и хотя бы 20 000 px).
+    # Всё мельче — эффекты (звёзды, искры) или подписи.
+    areas = [(s[0].stop - s[0].start) * (s[1].stop - s[1].start) for s in boxes]
+    min_cat = max(20_000, max(areas) / 3)
     cats, smalls = [], []
     for i, s in enumerate(boxes, start=1):
-        h, w = s[0].stop - s[0].start, s[1].stop - s[1].start
-        if h * w > 60_000:
+        if areas[i - 1] >= min_cat:
             cats.append({"ids": [i], "y0": s[0].start, "y1": s[0].stop, "x0": s[1].start, "x1": s[1].stop})
         else:
             smalls.append((i, s))
@@ -206,11 +214,19 @@ def main():
             pil = pil.resize((max(1, round(pil.width * scale)), max(1, round(pil.height * scale))), Image.LANCZOS)
             f2 = np.array(pil)
             ax = anchor_x(f2)
-            canvas = Image.new("RGBA", (CANVAS_W, CANVAS_H), (0, 0, 0, 0))
-            x = round(CANVAS_W / 2 - ax)
+            # Холст по высоте одинаковый у всех, по ширине — можно шире (canvas_w) для широких эффектов.
+            # Pivot по X в центре, поэтому кот от более широкого холста никуда не сдвигается.
+            cw = cfg.get("canvas_w", CANVAS_W)
+            canvas = Image.new("RGBA", (cw, CANVAS_H), (0, 0, 0, 0))
+            x = round(cw / 2 - ax)
             y = CANVAS_H - FLOOR_MARGIN - pil.height
-            canvas.alpha_composite(pil, (max(x, 0), max(y, 0)))
-            clipped = x < 0 or y < 0 or x + pil.width > CANVAS_W
+            clipped = x < 0 or y < 0 or x + pil.width > cw
+            # Не влезает — обрезаем выступающее (верх/край эффекта), а не сдвигаем кадр:
+            # иначе кот "провалится" под пол или уедет вбок.
+            if y < 0 or x < 0:
+                pil = pil.crop((max(0, -x), max(0, -y), pil.width, pil.height))
+                x, y = max(x, 0), max(y, 0)
+            canvas.alpha_composite(pil.crop((0, 0, min(pil.width, cw - x), pil.height)), (x, y))
             name = f"{prefix}_{cfg['anim']}_{idx:02d}.png"
             canvas.save(out / name, optimize=True)
             report.append(f"{name}: {pil.width}x{pil.height}  x={x} y={y}{'  !! ОБРЕЗАН' if clipped else ''}")
