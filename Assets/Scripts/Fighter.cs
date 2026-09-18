@@ -51,6 +51,7 @@ public class Fighter : MonoBehaviour
     [Header("Интерфейс")]
     [SerializeField] private Sprite portrait;       // портрет в рамке HUD
     [SerializeField] private Sprite portraitHit;    // портрет "получил удар" — показывается на миг
+    [SerializeField] private bool portraitFacesRight = true; // куда смотрит морда на картинке портрета
     [SerializeField] private Sprite namePlate;      // табличка с именем
     [SerializeField] private Sprite winsPlate;      // надпись "<ИМЯ> ПОБЕЖДАЕТ!" для экрана итогов
 
@@ -93,6 +94,7 @@ public class Fighter : MonoBehaviour
     public int MaxHealth => maxHealth;
     public Sprite Portrait => portrait;
     public Sprite PortraitHit => portraitHit;
+    public bool PortraitFacesRight => portraitFacesRight;
     public Sprite NamePlate => namePlate;
     public Sprite WinsPlate => winsPlate;
     public AudioClip HurtVoice => hurtVoice;

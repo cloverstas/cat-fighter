@@ -596,6 +596,7 @@ MonoBehaviour:
   meterPerDamageTaken: 0.8
   portrait: {fileID: 21300000, guid: 8277991da2007994a8ae885fb8ccc010, type: 3}
   portraitHit: {fileID: 21300000, guid: 4c887483bc3e65743a6d9416d95db267, type: 3}
+  portraitFacesRight: 0
   namePlate: {fileID: 21300000, guid: 4218dac9af70a9f41bfeef874845e83e, type: 3}
   winsPlate: {fileID: 21300000, guid: 6bdb78a26ffad3747844b4df15afce91, type: 3}
   hurtVoice: {fileID: 8300000, guid: 8dcad5b40da0386429270e5539193819, type: 3}
@@ -650,6 +651,16 @@ MonoBehaviour:
     - {fileID: 21300000, guid: ce0c8383ed883d946889abc6ae263803, type: 3}
     - {fileID: 21300000, guid: 7590685d7d0cd2543893dab5f81d5a05, type: 3}
     - {fileID: 21300000, guid: 21ad4a84f1efcfc4b84531bf9fdbefa9, type: 3}
+    framesPerSecond: 10
+    hitFrame: 0
+  - name: walk
+    frames:
+    - {fileID: 21300000, guid: 1978e8a0727b3fa4c8e5eba50ed3001e, type: 3}
+    - {fileID: 21300000, guid: 61067b744b152874f97663496e9e56cc, type: 3}
+    - {fileID: 21300000, guid: 8c721aa31da64204c8953dcf54d2b74f, type: 3}
+    - {fileID: 21300000, guid: f45d51c5d4e07a94b88fd998f5385f03, type: 3}
+    - {fileID: 21300000, guid: 931a34640e04d0b4191c20503f48efbd, type: 3}
+    - {fileID: 21300000, guid: 0ea23508537b7eb4daf3176741cfafed, type: 3}
     framesPerSecond: 10
     hitFrame: 0
 --- !u!114 &423304432
@@ -963,6 +974,7 @@ MonoBehaviour:
   meterPerDamageTaken: 0.8
   portrait: {fileID: 21300000, guid: d9bd25ba67c0bea438ae64b303e1a81f, type: 3}
   portraitHit: {fileID: 21300000, guid: 4dc11fb0177d4e5469b4a6cb8ebc7c0e, type: 3}
+  portraitFacesRight: 1
   namePlate: {fileID: 21300000, guid: 867987a571d80384d84dfb924ac6ca1a, type: 3}
   winsPlate: {fileID: 21300000, guid: d1d77b36a8d08114698ddcd0971f676b, type: 3}
   hurtVoice: {fileID: 8300000, guid: 9d8e469b746834247a18022af24b8b4a, type: 3}
@@ -1083,6 +1095,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a669fbfc438b2b64389328c2c43fb967, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArenaBackground
+  brightness: 0.85
 --- !u!212 &1972754588
 SpriteRenderer:
   serializedVersion: 3
@@ -1133,7 +1146,7 @@ SpriteRenderer:
   m_SortingOrder: -100
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 11909d286ec9c254d99b6514883e06f2, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.85, g: 0.85, b: 0.85, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

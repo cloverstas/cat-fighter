@@ -40,6 +40,8 @@ public class BattleHUD : MonoBehaviour
         "A / D — ШАГ     J / U — ЛАПЫ     K — НОГА     H — БЛОК     S — ПРИСЕД     L — СУПЕР";
 
     public Sprite FightLogo => fightLogo;
+    public Sprite PortraitFrame => portraitFrame;
+    public Sprite PortraitMask => portraitMask;
     public Sprite KoLogo => koLogo;
 
     // Всё, что относится к одной стороне экрана (одному коту)
@@ -269,7 +271,9 @@ public class BattleHUD : MonoBehaviour
         var face = s.portrait.rectTransform;
         face.anchorMin = new Vector2(0.17f, 0.16f); // ровно по "окну" рамки (измерено по portrait_mask)
         face.anchorMax = new Vector2(0.845f, 0.83f);
-        face.localScale = new Vector3(dir, 1, 1);    // отменяем зеркало — портрет Бельчика уже смотрит влево
+        // Морда должна смотреть к центру экрана. Рамка уже отзеркалена (dir), поэтому
+        // итоговое направление = dir × (куда смотрит картинка) × этот масштаб. Нужно, чтобы вышло dir.
+        face.localScale = new Vector3(fighter.PortraitFacesRight ? 1 : -1, 1, 1);
         s.portrait.preserveAspect = true;
         Img(mirror, "Frame", portraitFrame, Color.white);
 
@@ -466,7 +470,7 @@ public class BattleHUD : MonoBehaviour
     }
 
     // Чтобы кнопки нажимались, в сцене нужен EventSystem (для новой Input System — свой модуль ввода)
-    static void EnsureEventSystem()
+    public static void EnsureEventSystem()
     {
         if (FindAnyObjectByType<EventSystem>() != null) return;
         new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));

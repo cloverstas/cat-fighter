@@ -113,6 +113,7 @@ public static class FighterSetup
         so.FindProperty("crouchSprite").objectReferenceValue = LoadSprite(folder, $"{prefix}_crouch_01");
         so.FindProperty("portrait").objectReferenceValue = LoadSprite(UI + "/Portraits", $"{prefix}_portrait_neutral");
         so.FindProperty("portraitHit").objectReferenceValue = LoadSprite(UI + "/Portraits", $"{prefix}_portrait_hit");
+        so.FindProperty("portraitFacesRight").boolValue = prefix != "belchik"; // портрет Бельчика отзеркален — смотрит влево
         so.FindProperty("namePlate").objectReferenceValue = LoadSprite(UI, $"name_{prefix}");
         so.FindProperty("hurtVoice").objectReferenceValue = FindAudio($"cat_hurt_{prefix}");
         if (SuperNames.TryGetValue(prefix, out string superName))

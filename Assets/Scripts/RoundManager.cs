@@ -38,15 +38,26 @@ public class RoundManager : MonoBehaviour
     private bool fighting;              // идёт ли сейчас бой (между FIGHT! и K.O.)
     private float playerStartX, enemyStartX;
 
-    void Start()
+    // Start может быть корутиной: Unity сама запустит её. Так удобно "подождать" экран выбора бойца.
+    IEnumerator Start()
     {
         Time.timeScale = 1f; // на случай, если прошлый матч закончился посреди замедления
+
+        // Сначала — экран выбора. Он сам раздаёт роли: кому PlayerController, кому FighterAI.
+        var select = GetComponent<CharacterSelect>();
+        if (select == null) select = gameObject.AddComponent<CharacterSelect>();
+        yield return select.Run();
+        if (select.Player != null)
+        {
+            player = select.Player;
+            enemy = select.Enemy;
+        }
 
         FindFightersIfEmpty();
         if (player == null || enemy == null)
         {
             Debug.LogWarning("RoundManager: не нашёл двух бойцов");
-            return;
+            yield break;
         }
 
         // Запоминаем стартовые места — в каждом раунде коты возвращаются сюда
