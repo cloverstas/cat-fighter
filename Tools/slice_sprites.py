@@ -64,6 +64,8 @@ CHARACTERS = {
             dict(file="punch_sheet.png", anim="punch", frames=8, label_bands=[]),
             dict(file="kick_sheet.png", anim="kick", frames=8, label_bands=[]),
             dict(file="hit_sheet.png", anim="hit", frames=8, label_bands=[]),
+            dict(file="walk_sheet.png", anim="walk", frames=6, label_bands=[], optional=True),
+            dict(file="super_sheet.png", anim="super", frames=8, label_bands=[], optional=True),
             dict(file="win_sheet.png", anim="win", frames=4, label_bands=[], optional=True),
             dict(path=BLOCK_SHEET, anim="block", frames=2, pick=1, label_bands=[], flip=True),
             dict(path=CROUCH_SHEET, anim="crouch", frames=2, pick=1, label_bands=[], flip=True, scale_like="block"),
