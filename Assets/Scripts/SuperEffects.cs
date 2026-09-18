@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 
 // Кино-эффекты суперудара — то, что делает момент "сочным":
-//   начало приёма: время замирает, фон темнеет, крупно название приёма;
+//   начало приёма: время замирает, фон темнеет;
 //   попадание:     белая вспышка, тряска камеры и короткий стоп-кадр ("hitstop").
 // Коты про эффекты ничего не знают — скрипт просто подписан на их события.
 public class SuperEffects : MonoBehaviour
@@ -53,15 +53,12 @@ public class SuperEffects : MonoBehaviour
     {
         busy = true;
         if (background != null) background.color = darkBackground; // фон темнеет, коты остаются яркими
-        if (hud != null) hud.ShowBanner(null, f.SuperName);
 
         // Стоп-кадр: timeScale = 0 — всё, что зависит от времени, замирает.
         // Ждём через WaitForSecondsRealtime — на реальные секунды пауза не действует.
         Time.timeScale = 0f;
         yield return new WaitForSecondsRealtime(startFreeze);
         Time.timeScale = 1f;
-
-        if (hud != null) hud.HideBanner();
 
         // Фон плавно возвращает цвет
         for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime * 3f)
