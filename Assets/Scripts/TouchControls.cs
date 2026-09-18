@@ -25,8 +25,9 @@ public class TouchControls : MonoBehaviour
     private Sprite circle;
     private Sprite triangle;
 
-    // Телефон/планшет или экран с тачем
-    public static bool IsTouchDevice => Application.isMobilePlatform || Touchscreen.current != null;
+    // Телефон или планшет. (Touchscreen.current тут не годится: браузер на обычном ПК тоже
+    // сообщает о сенсорном вводе, и на ПК появлялись экранные кнопки вместо подсказки клавиш.)
+    public static bool IsTouchDevice => Application.isMobilePlatform;
 
     void Awake()
     {
@@ -49,6 +50,14 @@ public class TouchControls : MonoBehaviour
 
     void Update()
     {
+        // Кнопки скрыты, но пальцем коснулись экрана (ноутбук с тачскрином) — показываем
+        if (!visible && player != null && Touchscreen.current != null &&
+            Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        {
+            visible = true;
+            Build();
+        }
+
         if (!visible) return;
 
         // Кнопка СУПЕР: тусклая, пока шкала не полна; полная — яркая и пульсирует
@@ -81,7 +90,7 @@ public class TouchControls : MonoBehaviour
 
     void Build()
     {
-        font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        font = GameUI.Font; // шрифт с кириллицей
         circle = MakeCircleSprite(128);
         triangle = MakeTriangleSprite(64);
 
@@ -90,9 +99,7 @@ public class TouchControls : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 15; // поверх HUD, под экраном итогов
         var scaler = go.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight = 0.5f;
+        GameUI.SetupScaler(scaler);
         var root = (RectTransform)go.transform;
 
         // Левая рука: ◀ ▶ и ▼ (присед)

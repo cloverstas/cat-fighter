@@ -176,8 +176,8 @@ public static class FighterSetup
         Undo.RecordObject(cam, "Setup camera");
         Undo.RecordObject(cam.transform, "Setup camera");
         cam.orthographic = true;
-        cam.orthographicSize = 4.5f;
-        cam.transform.position = new Vector3(0f, 2.5f, -10f);
+        cam.orthographicSize = 4.5f;                                // в игре подстраивает ArenaBackground
+        cam.transform.position = new Vector3(0f, 2.52f, -10f);
         cam.transform.rotation = Quaternion.identity;
     }
 

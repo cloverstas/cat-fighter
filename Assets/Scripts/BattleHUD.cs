@@ -79,7 +79,7 @@ public class BattleHUD : MonoBehaviour
 
     public void Build(Fighter leftFighter, Fighter rightFighter, int roundsToWin)
     {
-        font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        font = GameUI.Font; // шрифт с кириллицей
         canvasRoot = CreateCanvas();
 
         left = BuildSide(leftFighter, false, roundsToWin);
@@ -401,9 +401,7 @@ public class BattleHUD : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 10;
         var scaler = go.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; // одинаково на любом разрешении
-        scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight = 0.5f;
+        GameUI.SetupScaler(scaler); // одинаково на любом разрешении и пропорциях
         return (RectTransform)go.transform;
     }
 

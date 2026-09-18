@@ -132,7 +132,7 @@ public class CharacterSelect : MonoBehaviour
 
     void BuildUI()
     {
-        font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        font = GameUI.Font; // шрифт с кириллицей
         var hud = GetComponent<BattleHUD>();
 
         canvasGO = new GameObject("CharacterSelect_Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -140,9 +140,7 @@ public class CharacterSelect : MonoBehaviour
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 20; // поверх боевого интерфейса
         var scaler = canvasGO.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight = 0.5f;
+        GameUI.SetupScaler(scaler);
         var root = (RectTransform)canvasGO.transform;
 
         var dim = NewImage(root, "Dim", null, new Color(0f, 0f, 0f, 0.75f));
