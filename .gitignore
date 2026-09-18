@@ -1,0 +1,42 @@
+# Что git НЕ хранит. Всё это Unity пересоздаёт сама при открытии проекта.
+
+# Кэш и временные файлы Unity (самое тяжёлое — гигабайты, генерируется заново)
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# Файлы проектов для редакторов кода (Visual Studio / Rider / VS Code) — Unity генерирует их сама
+*.csproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+.vs/
+.idea/
+.vscode/
+
+# Сборки
+*.apk
+*.aab
+*.unitypackage
+
+# Мусор операционной системы
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python-кэш скрипта нарезки
+__pycache__/
