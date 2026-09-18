@@ -60,8 +60,14 @@ public class SoundManager : MonoBehaviour
             f.Blocked += _ => Play(Cue.Block);
             f.Dodged += _ => Play(Cue.Dodge);
             f.Hurt += OnHurt;
-            f.SuperStarted += _ => Play(Cue.Super);
+            f.SuperStarted += OnSuperStarted;
         }
+    }
+
+    void OnSuperStarted(Fighter f)
+    {
+        if (f.SuperSound != null) PlayClip(f.SuperSound, 1f); // у кота свой боевой клич
+        else Play(Cue.Super);                                   // иначе — общий звук супера
     }
 
     void OnHurt(Fighter f)

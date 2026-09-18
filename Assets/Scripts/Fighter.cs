@@ -57,6 +57,7 @@ public class Fighter : MonoBehaviour
 
     [Header("Звук")]
     [SerializeField] private AudioClip hurtVoice;   // свой голос кота, когда ему больно
+    [SerializeField] private AudioClip superSound;  // свой звук суперудара (боевой клич)
 
     // enum — свой тип с фиксированным набором вариантов. Кот всегда ровно в одной стойке.
     // public — потому что стойку теперь выбирают снаружи (игрок или ИИ).
@@ -98,6 +99,7 @@ public class Fighter : MonoBehaviour
     public Sprite NamePlate => namePlate;
     public Sprite WinsPlate => winsPlate;
     public AudioClip HurtVoice => hurtVoice;
+    public AudioClip SuperSound => superSound;
     public bool IsBusy => anim.IsPlaying;                 // бьёт или получает — команды не принимает
     public string CurrentAction => anim.CurrentClip;      // "kick", "punch_left", "hit"... или null
     public bool IsAttacking => CurrentAction == "kick" || CurrentAction == "super" ||

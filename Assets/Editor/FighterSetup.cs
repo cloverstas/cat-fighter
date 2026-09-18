@@ -116,6 +116,7 @@ public static class FighterSetup
         so.FindProperty("portraitFacesRight").boolValue = prefix != "belchik"; // портрет Бельчика отзеркален — смотрит влево
         so.FindProperty("namePlate").objectReferenceValue = LoadSprite(UI, $"name_{prefix}");
         so.FindProperty("hurtVoice").objectReferenceValue = FindAudio($"cat_hurt_{prefix}");
+        so.FindProperty("superSound").objectReferenceValue = FindAudio($"super_{prefix}");
         if (SuperNames.TryGetValue(prefix, out string superName))
             so.FindProperty("superName").stringValue = superName;
         so.FindProperty("winsPlate").objectReferenceValue = LoadSpriteAtPath($"{UI}/End/wins_{prefix}.png", false);
@@ -295,7 +296,9 @@ public static class FighterSetup
         for (int i = 0; i < SoundPrefixes.Length; i++)
         {
             var (cue, prefix) = SoundPrefixes[i];
-            var clips = all.FindAll(a => a.name.StartsWith(prefix));
+            // Личные звуки котов (super_murzik, cat_hurt_belchik…) — не в общий сигнал, они подключаются к самим котам
+            var clips = all.FindAll(a => a.name.StartsWith(prefix) &&
+                                         !a.name.EndsWith("_murzik") && !a.name.EndsWith("_belchik"));
             SerializedProperty entry = cues.GetArrayElementAtIndex(i);
             entry.FindPropertyRelative("cue").enumValueIndex = (int)cue;
             SerializedProperty arr = entry.FindPropertyRelative("clips");

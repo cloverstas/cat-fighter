@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 // "Руки игрока": читает клавиатуру и отдаёт команды своему Fighter.
-// Управление: A/D или стрелки — шаг, J — правая лапа, U — левая, K — нога,
-//             H (держать) — блок, S (держать) — пригнуться, L — суперудар (при полной шкале).
+// Управление: A/D или стрелки — шаг, I — левая лапа, O — правая лапа, J — нога,
+//             K — суперудар (при полной шкале), ПРОБЕЛ (держать) — блок, S (держать) — пригнуться.
 [RequireComponent(typeof(Fighter))]
 public class PlayerController : MonoBehaviour
 {
@@ -26,14 +26,14 @@ public class PlayerController : MonoBehaviour
         fighter.Move(direction);
 
         // Стойки держатся, пока зажата кнопка. Если зажаты обе — блок важнее.
-        if (kb.hKey.isPressed) fighter.HoldStance(Fighter.Stance.Block);
+        if (kb.spaceKey.isPressed) fighter.HoldStance(Fighter.Stance.Block);
         else if (kb.sKey.isPressed) fighter.HoldStance(Fighter.Stance.Crouch);
         else fighter.HoldStance(Fighter.Stance.Stand);
 
         // Удары — по одному нажатию
-        if (kb.jKey.wasPressedThisFrame) fighter.Attack("punch_right");
-        else if (kb.uKey.wasPressedThisFrame) fighter.Attack("punch_left");
-        else if (kb.kKey.wasPressedThisFrame) fighter.Attack("kick");
-        else if (kb.lKey.wasPressedThisFrame) fighter.TrySuper();
+        if (kb.iKey.wasPressedThisFrame) fighter.Attack("punch_left");
+        else if (kb.oKey.wasPressedThisFrame) fighter.Attack("punch_right");
+        else if (kb.jKey.wasPressedThisFrame) fighter.Attack("kick");
+        else if (kb.kKey.wasPressedThisFrame) fighter.TrySuper();
     }
 }

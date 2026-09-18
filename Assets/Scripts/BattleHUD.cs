@@ -37,7 +37,7 @@ public class BattleHUD : MonoBehaviour
     [SerializeField] private Color portraitBack = new Color(0.16f, 0.16f, 0.2f);
 
     private const string ControlsHint =
-        "A / D — ШАГ     J / U — ЛАПЫ     K — НОГА     H — БЛОК     S — ПРИСЕД     L — СУПЕР";
+        "A / D — ШАГ     I / O — ЛАПЫ     J — НОГА     K — СУПЕР     ПРОБЕЛ — БЛОК     S — ПРИСЕД";
 
     public Sprite FightLogo => fightLogo;
     public Sprite PortraitFrame => portraitFrame;
