@@ -36,8 +36,8 @@ public class BattleHUD : MonoBehaviour
     [SerializeField] private Color trailColor = new Color(1f, 0.85f, 0.35f); // "шлейф" только что потерянного здоровья
     [SerializeField] private Color portraitBack = new Color(0.16f, 0.16f, 0.2f);
 
-    [Header("Подсказка управления")]
-    [SerializeField] private string controlsHint = "A / D — ШАГ     J / U — ЛАПЫ     K — НОГА     H — БЛОК     S — ПРИСЕД";
+    private const string ControlsHint =
+        "A / D — ШАГ     J / U — ЛАПЫ     K — НОГА     H — БЛОК     S — ПРИСЕД     L — СУПЕР";
 
     public Sprite FightLogo => fightLogo;
     public Sprite KoLogo => koLogo;
@@ -51,6 +51,10 @@ public class BattleHUD : MonoBehaviour
         public Image healthFill;
         public Image trailFill;
         public Image[] paws;
+        public Image superFill;    // шкала суперудара
+        public RectTransform superBar;
+        public Text superReadyText;
+        public Color superColor;
         public float hurtTimer;    // сколько ещё показывать морщащийся портрет
         public float trailDelay;   // пауза перед тем, как шлейф начнёт догонять
     }
@@ -60,6 +64,7 @@ public class BattleHUD : MonoBehaviour
     private RectTransform canvasRoot;
     private Image banner;
     private Text bannerText;
+    private Image flash;        // вспышка на весь экран (суперудар попал)
     private Text timerText;
     private Text roundText;
     private GameObject endPanel;
@@ -80,6 +85,7 @@ public class BattleHUD : MonoBehaviour
         BuildTimer();
         BuildControlsHint();
         BuildBanner();
+        BuildFlash();
         BuildEndPanel();
         EnsureEventSystem();
     }
@@ -109,6 +115,12 @@ public class BattleHUD : MonoBehaviour
         bannerText.text = fallbackText;
         bannerText.gameObject.SetActive(sprite == null);
         banner.rectTransform.localScale = Vector3.one * 1.4f; // "влёт": начинаем крупнее и сжимаемся в Update
+    }
+
+    // Белая вспышка на весь экран (strength 0..1)
+    public void Flash(float strength)
+    {
+        flash.color = new Color(1f, 1f, 1f, strength);
     }
 
     public void HideBanner()
@@ -170,6 +182,10 @@ public class BattleHUD : MonoBehaviour
         bannerText.rectTransform.localScale = b.localScale;
 
         if (endPanel.activeSelf) AnimateEndScreen();
+
+        // Вспышка гаснет сама
+        if (flash.color.a > 0f)
+            flash.color = new Color(1f, 1f, 1f, Mathf.MoveTowards(flash.color.a, 0f, dt * 3f));
     }
 
     // Экран итогов: заголовок "влетает" с пружинкой, кнопка "дышит" — зовёт нажать.
@@ -213,6 +229,14 @@ public class BattleHUD : MonoBehaviour
         if (s.portrait.sprite != want) s.portrait.sprite = want;
         s.portrait.color = Color.Lerp(s.portrait.color, Color.white, dt * 6f);
         s.portraitBox.localScale = Vector3.Lerp(s.portraitBox.localScale, Vector3.one, dt * 12f);
+
+        // Шкала супера: плавно догоняет значение; полная — мигает, "дышит" и пишет "СУПЕР ГОТОВ!"
+        s.superFill.fillAmount = Mathf.MoveTowards(s.superFill.fillAmount, s.fighter.SuperMeter01, dt * 1.5f);
+        bool ready = s.fighter.SuperReady;
+        s.superReadyText.gameObject.SetActive(ready);
+        float pulse = ready ? 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 10f) : 0f;
+        s.superFill.color = Color.Lerp(s.superColor, Color.white, pulse * 0.6f);
+        s.superBar.localScale = Vector3.one * (1f + pulse * 0.04f);
     }
 
     void OnHurt(Side s)
@@ -274,7 +298,35 @@ public class BattleHUD : MonoBehaviour
             s.paws[i] = Img(paw, "Icon", pawEmpty, Color.white);
             s.paws[i].preserveAspect = true;
         }
+        BuildSuperBar(s, isRight);
         return s;
+    }
+
+    // Шкала суперудара внизу экрана — как синяя и красная полоски на заставке
+    void BuildSuperBar(Side s, bool isRight)
+    {
+        Vector2 anchor = isRight ? new Vector2(1, 0) : new Vector2(0, 0);
+        float dir = isRight ? -1f : 1f;
+        s.superColor = isRight ? new Color(1f, 0.28f, 0.2f) : new Color(0.25f, 0.6f, 1f);
+
+        var paw = Box(canvasRoot, "SuperPaw", anchor, new Vector2(22 * dir, 26), new Vector2(66, 60));
+        Img(paw, "Icon", pawFilled, Color.white).preserveAspect = true;
+
+        s.superBar = Box(canvasRoot, "SuperBar", anchor, new Vector2(96 * dir, 30), new Vector2(520, 78));
+        var mirror = Box(s.superBar, "Mirror", new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, stretch: true);
+        mirror.localScale = new Vector3(dir, 1, 1);
+        Img(mirror, "Back", healthbarFill, new Color(0f, 0f, 0f, 0.65f));
+        s.superFill = FillImg(mirror, "Fill", s.superColor);
+        s.superFill.fillAmount = 0f;
+        Img(mirror, "Frame", healthbarFrame, Color.white);
+
+        s.superReadyText = Label(s.superBar, "СУПЕР ГОТОВ!", 30, Color.white, new Vector2(0, 54), new Vector2(520, 40));
+        s.superReadyText.gameObject.SetActive(false);
+    }
+
+    void BuildFlash()
+    {
+        flash = Img(canvasRoot, "Flash", null, new Color(1f, 1f, 1f, 0f));
     }
 
     void BuildTimer()
@@ -287,9 +339,9 @@ public class BattleHUD : MonoBehaviour
 
     void BuildControlsHint()
     {
-        var box = Box(canvasRoot, "Controls", new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(1250, 56));
+        var box = Box(canvasRoot, "Controls", new Vector2(0.5f, 0), new Vector2(0, 118), new Vector2(1250, 56));
         Img(box, "Back", null, new Color(0f, 0f, 0f, 0.55f));
-        Label(box, controlsHint, 28, Color.white, Vector2.zero, new Vector2(1250, 56));
+        Label(box, ControlsHint, 26, Color.white, Vector2.zero, new Vector2(1250, 56));
     }
 
     void BuildBanner()

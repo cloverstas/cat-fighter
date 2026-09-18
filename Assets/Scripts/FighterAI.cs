@@ -14,6 +14,7 @@ public class FighterAI : MonoBehaviour
     [Range(0f, 1f)] [SerializeField] private float blockChance = 0.35f; // шанс поставить блок на атаку
     [Range(0f, 1f)] [SerializeField] private float duckChance = 0.35f;  // шанс пригнуться от пинка
     [Range(0f, 1f)] [SerializeField] private float kickChance = 0.25f;  // доля пинков среди атак
+    [Range(0f, 1f)] [SerializeField] private float superChance = 0.5f;  // шанс сразу пустить готовый суперудар
 
     [Header("Темп")]
     [SerializeField] private Vector2 thinkDelay = new Vector2(0.35f, 0.9f); // пауза между решениями: от..до, секунд
@@ -85,6 +86,13 @@ public class FighterAI : MonoBehaviour
         thinkTimer -= dt;
         if (thinkTimer > 0f) return;
         thinkTimer = Random.Range(thinkDelay.x, thinkDelay.y); // случайная пауза — чтобы не был предсказуемым роботом
+
+        // Шкала полная и противник в досягаемости — иногда бьём суперударом
+        if (fighter.SuperReady && distance <= fighter.SuperReach && Random.value < superChance)
+        {
+            fighter.TrySuper();
+            return;
+        }
 
         float roll = Random.value; // случайное число от 0 до 1 — "бросок кубика"
         if (roll < aggression)

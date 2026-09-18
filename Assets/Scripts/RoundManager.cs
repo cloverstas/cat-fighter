@@ -60,6 +60,7 @@ public class RoundManager : MonoBehaviour
         hud = GetComponent<BattleHUD>();
         if (hud == null) hud = gameObject.AddComponent<BattleHUD>(); // старый RoundManager из сцены — без HUD
         hud.Build(player, enemy, roundsToWin);
+        if (GetComponent<SuperEffects>() == null) gameObject.AddComponent<SuperEffects>(); // кино-эффекты суперудара
         hud.SetWins(0, 0);
 
         StartCoroutine(RoundIntro());

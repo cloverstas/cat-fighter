@@ -209,7 +209,6 @@ MonoBehaviour:
   healthColor: {r: 0.45, g: 0.9, b: 0.2, a: 1}
   trailColor: {r: 1, g: 0.85, b: 0.35, a: 1}
   portraitBack: {r: 0.16, g: 0.16, b: 0.2, a: 1}
-  controlsHint: "A / D \u2014 \u0428\u0410\u0413     J / U \u2014 \u041B\u0410\u041F\u042B     K \u2014 \u041D\u041E\u0413\u0410     H \u2014 \u0411\u041B\u041E\u041A     S \u2014 \u041F\u0420\u0418\u0421\u0415\u0414"
 --- !u!114 &101292757
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -263,6 +262,9 @@ MonoBehaviour:
     clips: []
     volume: 1
   - cue: 10
+    clips: []
+    volume: 1
+  - cue: 11
     clips: []
     volume: 1
   pitchVariation: 0.08
@@ -585,11 +587,18 @@ MonoBehaviour:
   blockDamageMultiplier: 0.2
   blockPushback: 0.3
   crouchSprite: {fileID: 21300000, guid: 8f840af2076c53c438aec540dd4b3a11, type: 3}
+  superName: "\u0411\u0415\u041B\u042B\u0419 \u0412\u0418\u0425\u0420\u042C!"
+  superDamage: 30
+  superReach: 4.3
+  superLunge: 1.5
+  meterMax: 100
+  meterPerDamageDealt: 1.2
+  meterPerDamageTaken: 0.8
   portrait: {fileID: 21300000, guid: 8277991da2007994a8ae885fb8ccc010, type: 3}
   portraitHit: {fileID: 21300000, guid: 4c887483bc3e65743a6d9416d95db267, type: 3}
   namePlate: {fileID: 21300000, guid: 4218dac9af70a9f41bfeef874845e83e, type: 3}
   winsPlate: {fileID: 21300000, guid: 6bdb78a26ffad3747844b4df15afce91, type: 3}
-  hurtVoice: {fileID: 0}
+  hurtVoice: {fileID: 8300000, guid: 8dcad5b40da0386429270e5539193819, type: 3}
 --- !u!114 &423304431
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -748,6 +757,7 @@ MonoBehaviour:
   blockChance: 0.35
   duckChance: 0.35
   kickChance: 0.25
+  superChance: 0.5
   thinkDelay: {x: 0.35, y: 0.9}
   defenseHoldTime: 0.5
   retreatTime: 0.3
@@ -944,11 +954,18 @@ MonoBehaviour:
   blockDamageMultiplier: 0.2
   blockPushback: 0.3
   crouchSprite: {fileID: 21300000, guid: 87e13f41c8877324198b52c76dd0d111, type: 3}
+  superName: "\u0423\u0428\u0418\u0420\u041E \u0421 \u0420\u0410\u0417\u0412\u041E\u0420\u041E\u0422\u0410!"
+  superDamage: 30
+  superReach: 4.3
+  superLunge: 1.5
+  meterMax: 100
+  meterPerDamageDealt: 1.2
+  meterPerDamageTaken: 0.8
   portrait: {fileID: 21300000, guid: d9bd25ba67c0bea438ae64b303e1a81f, type: 3}
   portraitHit: {fileID: 21300000, guid: 4dc11fb0177d4e5469b4a6cb8ebc7c0e, type: 3}
   namePlate: {fileID: 21300000, guid: 867987a571d80384d84dfb924ac6ca1a, type: 3}
   winsPlate: {fileID: 21300000, guid: d1d77b36a8d08114698ddcd0971f676b, type: 3}
-  hurtVoice: {fileID: 0}
+  hurtVoice: {fileID: 8300000, guid: 9d8e469b746834247a18022af24b8b4a, type: 3}
 --- !u!114 &1188829079
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1000,6 +1017,16 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 8ec80bc7958b07b4b905b8e3ab1ad592, type: 3}
     - {fileID: 21300000, guid: 494698c68225a67438f22166eb02089b, type: 3}
     - {fileID: 21300000, guid: 04e3dba57b6916945b5ed8ff12aaa4d0, type: 3}
+    framesPerSecond: 10
+    hitFrame: 0
+  - name: walk
+    frames:
+    - {fileID: 21300000, guid: 749b0baaa8f87bb429b8ee6b57f96f44, type: 3}
+    - {fileID: 21300000, guid: 6783afa2010798b42af73544ac78aeba, type: 3}
+    - {fileID: 21300000, guid: 9a3229856f8663c458992cc3489d322a, type: 3}
+    - {fileID: 21300000, guid: b211d0d673ed63d4dab32ffc579b49fd, type: 3}
+    - {fileID: 21300000, guid: baaaf3224aac4134abce153545dabbb1, type: 3}
+    - {fileID: 21300000, guid: 9b69bde9a13427d4ab4d96380430ea94, type: 3}
     framesPerSecond: 10
     hitFrame: 0
 --- !u!114 &1188829080

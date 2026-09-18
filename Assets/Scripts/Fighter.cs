@@ -39,6 +39,15 @@ public class Fighter : MonoBehaviour
     [Header("Присед")]
     [SerializeField] private Sprite crouchSprite;                 // поза приседа — crouch_01
 
+    [Header("Суперудар")]
+    [SerializeField] private string superName = "СУПЕРУДАР!";   // название приёма — крупно на экране
+    [SerializeField] private int superDamage = 30;
+    [SerializeField] private float superReach = 4.3f;           // бьёт дальше обычного — с рывком
+    [SerializeField] private float superLunge = 1.5f;           // насколько рывок несёт вперёд
+    [SerializeField] private float meterMax = 100f;
+    [SerializeField] private float meterPerDamageDealt = 1.2f;  // шкала растёт, когда бьёшь...
+    [SerializeField] private float meterPerDamageTaken = 0.8f;  // ...и когда получаешь (шанс отыграться)
+
     [Header("Интерфейс")]
     [SerializeField] private Sprite portrait;       // портрет в рамке HUD
     [SerializeField] private Sprite portraitHit;    // портрет "получил удар" — показывается на миг
@@ -59,6 +68,7 @@ public class Fighter : MonoBehaviour
         public int damage;
         public bool canBeDucked; // можно ли пригнуться
         public bool knockdown;   // сбивает ли с ног
+        public bool unblockable; // пробивает блок (суперудар)
     }
 
     private int health;
@@ -70,6 +80,9 @@ public class Fighter : MonoBehaviour
     private float groundY;     // высота "пола" — запоминаем на старте
     private float stepPhase;   // где мы сейчас в цикле подскока
     private bool frozen;       // раунд окончен — команды больше не принимаем
+    private float meter;       // шкала суперудара
+    private bool superActive;  // сейчас идёт суперудар
+    private float lungeLeft;   // сколько ещё пролететь рывком
 
     // ---------- Сведения для тех, кто управляет (особенно для ИИ) ----------
     // "=>" — короткая запись свойства "только для чтения"
@@ -85,9 +98,16 @@ public class Fighter : MonoBehaviour
     public AudioClip HurtVoice => hurtVoice;
     public bool IsBusy => anim.IsPlaying;                 // бьёт или получает — команды не принимает
     public string CurrentAction => anim.CurrentClip;      // "kick", "punch_left", "hit"... или null
-    public bool IsAttacking => CurrentAction == "kick" || (CurrentAction != null && CurrentAction.StartsWith("punch"));
+    public bool IsAttacking => CurrentAction == "kick" || CurrentAction == "super" ||
+                               (CurrentAction != null && CurrentAction.StartsWith("punch"));
     public int AttackCount { get; private set; }          // сколько атак начато — ИИ по нему замечает новую атаку
     public bool IsKO => health <= 0;                       // нокаут
+    public float SuperMeter01 => meter / meterMax;         // заполненность шкалы 0..1
+    public bool SuperReady => meter >= meterMax;
+    public float SuperReach => superReach;
+    public string SuperName => superName;
+    // Пока нет своих кадров суперудара — бьём обычным пинком, но со всеми эффектами и силой супера
+    private string SuperClip => anim.HasClip("super") ? "super" : "kick";
     public bool IsFrozen => frozen;
 
     // Событие "меня нокаутировали". На него подписан RoundManager — он и решает, что бой окончен.
@@ -102,6 +122,10 @@ public class Fighter : MonoBehaviour
     public event System.Action<Fighter> Dodged;
 
     public bool LastHitWasHeavy { get; private set; } // последний пропущенный удар — тяжёлый (сбивает с ног)?
+
+    // Суперудар: начался (для кино-эффектов и звука) и попал (атакующий, по кому)
+    public event System.Action<Fighter> SuperStarted;
+    public event System.Action<Fighter, Fighter> SuperLanded;
 
     // Куда смотрит кот: +1 вправо, -1 влево. Все кадры нарисованы лицом вправо,
     // поэтому если стоит галочка Flip X — кот смотрит влево.
@@ -160,6 +184,20 @@ public class Fighter : MonoBehaviour
         return true;
     }
 
+    // Суперудар: только при полной шкале. Шкала обнуляется, кот делает рывок и бьёт.
+    public bool TrySuper()
+    {
+        if (!SuperReady || frozen || anim.IsPlaying || stance != Stance.Stand) return false;
+        meter = 0f;
+        superActive = true;
+        lungeLeft = superLunge;
+        anim.Play(SuperClip);
+        AttackCount++;
+        AttackStarted?.Invoke(this);
+        SuperStarted?.Invoke(this);
+        return true;
+    }
+
     // Раунд окончен: стоп, никаких команд. Победитель доигрывает удар и встаёт в стойку.
     public void Freeze()
     {
@@ -180,6 +218,8 @@ public class Fighter : MonoBehaviour
         health = maxHealth;
         Freeze();
         stance = Stance.Stand;
+        superActive = false;
+        lungeLeft = 0f;
         anim.Stop();                       // прервать любую анимацию (например, лежит в нокауте) и встать
         transform.position = new Vector3(startX, groundY, transform.position.z);
     }
@@ -199,10 +239,15 @@ public class Fighter : MonoBehaviour
         // sortingOrder: чем больше число, тем "ближе к зрителю".
         spriteRenderer.sortingOrder = IsAttacking ? 1 : 0;
 
+        // Суперудар закончился — снимаем флаг; пока идёт — рывок вперёд к противнику
+        if (superActive && !anim.IsPlaying) superActive = false;
+        if (superActive && lungeLeft > 0f) Lunge();
+
         if (frozen)
         {
             // Лежачего не трогаем. Победитель — как доиграет удар, выходит из блока/приседа в стойку.
             if (!IsKO && !anim.IsPlaying) SetStance(Stance.Stand);
+            anim.StopLoop(); // перестать шагать
             Land();
             return;
         }
@@ -250,8 +295,18 @@ public class Fighter : MonoBehaviour
     {
         if (moveInput == 0f)
         {
+            anim.StopLoop(); // остановились — из ходьбы в стойку
             Land();
             return;
+        }
+
+        // Есть кадры ходьбы — шагаем ими (назад — те же кадры задом наперёд), без подскока из кода.
+        // Нет кадров — старый способ: стойка + подскок.
+        bool hasWalk = anim.HasClip("walk");
+        if (hasWalk)
+        {
+            bool backward = moveInput * Facing < 0; // идём против направления взгляда
+            anim.PlayLoop("walk", backward);
         }
 
         Vector3 pos = transform.position;
@@ -271,8 +326,25 @@ public class Fighter : MonoBehaviour
 
         // Подскок: |sin| даёт "горбики" 0 → 1 → 0 → 1..., как шаги
         stepPhase += Time.deltaTime * stepsPerSecond;
-        pos.y = groundY + Mathf.Abs(Mathf.Sin(stepPhase * Mathf.PI)) * hopHeight;
+        pos.y = hasWalk ? groundY : groundY + Mathf.Abs(Mathf.Sin(stepPhase * Mathf.PI)) * hopHeight;
 
+        transform.position = pos;
+    }
+
+    // Рывок суперудара: быстро вперёд, но не сквозь противника
+    void Lunge()
+    {
+        float step = Mathf.Min(lungeLeft, 12f * Time.deltaTime);
+        lungeLeft -= step;
+        Vector3 pos = transform.position;
+        pos.x += Facing * step;
+        if (opponent != null)
+        {
+            float oppX = opponent.transform.position.x;
+            if (Facing > 0) pos.x = Mathf.Min(pos.x, oppX - minDistance);
+            else            pos.x = Mathf.Max(pos.x, oppX + minDistance);
+        }
+        pos.x = Mathf.Clamp(pos.x, minX, maxX);
         transform.position = pos;
     }
 
@@ -293,15 +365,17 @@ public class Fighter : MonoBehaviour
         if (opponent == null) return;
 
         bool isKick = clipName == "kick";
-        float reach = isKick ? kickReach : punchReach;
+        float reach = superActive ? superReach : isKick ? kickReach : punchReach;
 
-        // Заполняем карточку удара
-        HitInfo hit = new HitInfo
-        {
-            damage = isKick ? kickDamage : punchDamage,
-            canBeDucked = isKick ? kickCanBeDucked : punchCanBeDucked,
-            knockdown = isKick ? kickKnocksDown : punchKnocksDown,
-        };
+        // Заполняем карточку удара. Суперудар: мощный, сбивает с ног, не блокируется и не уворачивается.
+        HitInfo hit = superActive
+            ? new HitInfo { damage = superDamage, knockdown = true, unblockable = true }
+            : new HitInfo
+            {
+                damage = isKick ? kickDamage : punchDamage,
+                canBeDucked = isKick ? kickCanBeDucked : punchCanBeDucked,
+                knockdown = isKick ? kickKnocksDown : punchKnocksDown,
+            };
 
         // dx — расстояние до противника со знаком. Умножаем на Facing:
         // если результат положительный — противник впереди, отрицательный — за спиной.
@@ -309,23 +383,32 @@ public class Fighter : MonoBehaviour
 
         if (dx > 0 && dx <= reach)
         {
-            opponent.TakeHit(hit);
+            int dealt = opponent.TakeHit(hit);
+            if (superActive)
+            {
+                if (dealt > 0) SuperLanded?.Invoke(this, opponent);
+            }
+            else
+            {
+                AddMeter(dealt * meterPerDamageDealt); // попал — шкала растёт
+            }
         }
     }
 
-    public void TakeHit(HitInfo hit)
+    // Получить удар. Возвращает, сколько урона реально прошло (0 — промах/уворот).
+    public int TakeHit(HitInfo hit)
     {
-        if (IsKO || frozen) return; // лежачего не бьют, и после конца раунда удары не считаются
+        if (IsKO || frozen) return 0; // лежачего не бьют, и после конца раунда удары не считаются
 
         if (stance == Stance.Crouch && hit.canBeDucked)
         {
             // Пригнулся — удар прошёл над головой, урона нет
             Debug.Log($"{name}: увернулся!");
             Dodged?.Invoke(this);
-            return;
+            return 0;
         }
 
-        bool blocked = stance == Stance.Block;
+        bool blocked = stance == Stance.Block && !hit.unblockable;
         int damage = blocked
             ? Mathf.Max(1, Mathf.RoundToInt(hit.damage * blockDamageMultiplier)) // в блок — малая доля, но хотя бы 1
             : hit.damage;
@@ -333,6 +416,7 @@ public class Fighter : MonoBehaviour
         // Mathf.Max не даёт здоровью уйти ниже нуля
         health = Mathf.Max(health - damage, 0);
         Debug.Log($"{name}: {(blocked ? "блок! " : "")}здоровье {health}");
+        AddMeter(damage * meterPerDamageTaken); // получил — тоже копишь на ответку
 
         if (blocked)
         {
@@ -351,13 +435,13 @@ public class Fighter : MonoBehaviour
             Freeze(); // лежащий кот больше не слушает команд
             anim.Play("ko", holdLastFrame: true);
             KnockedOut?.Invoke(this);
-            return;
+            return damage;
         }
 
         if (blocked)
         {
             PushBack(blockPushback); // не падаем — только отъезжаем назад
-            return;
+            return damage;
         }
 
         // Пропущенный удар выбивает из любой стойки. Сбрасываем стойку заранее,
@@ -373,6 +457,12 @@ public class Fighter : MonoBehaviour
             anim.Play("hit_light");  // лёгкий: поморщился и снова в стойке
             PushBack(lightHitPushback);
         }
+        return damage;
+    }
+
+    void AddMeter(float amount)
+    {
+        meter = Mathf.Min(meter + amount, meterMax);
     }
 
     // Отъехать назад — против направления взгляда

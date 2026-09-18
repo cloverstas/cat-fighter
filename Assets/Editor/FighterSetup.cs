@@ -30,6 +30,8 @@ public static class FighterSetup
         new ClipDef("punch_left",  "punch", 7, 8, 12, 1),
         new ClipDef("kick",        "kick",  1, 8, 14, 5),
         new ClipDef("hit",         "hit",   1, 8, 10, 0),
+        new ClipDef("walk",        "walk",  1, 6, 10, 0, optional: true),
+        new ClipDef("super",       "super", 1, 8, 14, 5, optional: true),
         new ClipDef("win",         "win",   1, 4, 8,  0, optional: true),
     };
 
@@ -113,6 +115,8 @@ public static class FighterSetup
         so.FindProperty("portraitHit").objectReferenceValue = LoadSprite(UI + "/Portraits", $"{prefix}_portrait_hit");
         so.FindProperty("namePlate").objectReferenceValue = LoadSprite(UI, $"name_{prefix}");
         so.FindProperty("hurtVoice").objectReferenceValue = FindAudio($"cat_hurt_{prefix}");
+        if (SuperNames.TryGetValue(prefix, out string superName))
+            so.FindProperty("superName").stringValue = superName;
         so.FindProperty("winsPlate").objectReferenceValue = LoadSpriteAtPath($"{UI}/End/wins_{prefix}.png", false);
         so.ApplyModifiedProperties();
 
@@ -153,6 +157,13 @@ public static class FighterSetup
     }
 
     private const string UI = "Assets/Art/UI";
+
+    // Названия суперударов — крупно на экране в момент приёма
+    private static readonly System.Collections.Generic.Dictionary<string, string> SuperNames = new()
+    {
+        { "murzik", "УШИРО С РАЗВОРОТА!" },
+        { "belchik", "БЕЛЫЙ ВИХРЬ!" },
+    };
 
     // Камера: ортографическая (без перспективы — как в 2D-игре) и так, чтобы пол (y = 0)
     // был примерно на 22% от низа экрана, а коты занимали почти половину высоты — как на заставке.
@@ -240,6 +251,7 @@ public static class FighterSetup
         (SoundManager.Cue.Dodge, "dodge"), (SoundManager.Cue.CatHurt, "cat_hurt"),
         (SoundManager.Cue.KO, "ko"), (SoundManager.Cue.Round, "round"),
         (SoundManager.Cue.Fight, "fight"), (SoundManager.Cue.Win, "win"), (SoundManager.Cue.Lose, "lose"),
+        (SoundManager.Cue.Super, "super"),
     };
 
     // Найти звук в Assets/Audio по имени файла (без расширения — подойдёт .wav, .mp3, .ogg)

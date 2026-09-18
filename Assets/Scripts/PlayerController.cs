@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 // "Руки игрока": читает клавиатуру и отдаёт команды своему Fighter.
 // Управление: A/D или стрелки — шаг, J — правая лапа, U — левая, K — нога,
-//             H (держать) — блок, S (держать) — пригнуться.
+//             H (держать) — блок, S (держать) — пригнуться, L — суперудар (при полной шкале).
 [RequireComponent(typeof(Fighter))]
 public class PlayerController : MonoBehaviour
 {
@@ -34,5 +34,6 @@ public class PlayerController : MonoBehaviour
         if (kb.jKey.wasPressedThisFrame) fighter.Attack("punch_right");
         else if (kb.uKey.wasPressedThisFrame) fighter.Attack("punch_left");
         else if (kb.kKey.wasPressedThisFrame) fighter.Attack("kick");
+        else if (kb.lKey.wasPressedThisFrame) fighter.TrySuper();
     }
 }

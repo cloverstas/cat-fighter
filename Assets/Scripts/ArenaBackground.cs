@@ -8,6 +8,9 @@ using UnityEngine;
 public class ArenaBackground : MonoBehaviour
 {
     private SpriteRenderer sr;
+    private Vector3? baseCamPos; // "?" — может быть пустым: ещё не запомнили
+
+    public SpriteRenderer Renderer => sr;
 
     void OnEnable()
     {
@@ -33,7 +36,17 @@ public class ArenaBackground : MonoBehaviour
 
         // Ставим центр картинки в центр камеры (с учётом pivot спрайта)
         Vector3 centerOffset = sr.sprite.bounds.center * scale;
-        Vector3 camPos = cam.transform.position;
+        // В игре держимся за стартовую позицию камеры — чтобы при тряске камеры фон трясся вместе с котами
+        Vector3 camPos;
+        if (Application.isPlaying)
+        {
+            if (baseCamPos == null) baseCamPos = cam.transform.position;
+            camPos = baseCamPos.Value;
+        }
+        else
+        {
+            camPos = cam.transform.position;
+        }
         transform.position = new Vector3(camPos.x - centerOffset.x, camPos.y - centerOffset.y, 10f);
     }
 }

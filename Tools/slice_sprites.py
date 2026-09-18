@@ -48,6 +48,8 @@ CHARACTERS = {
             dict(file="hit_sheet.png", anim="hit", frames=8, label_bands=[(405, 485), (790, 870)],
                  split=[(11, 540, 901, 800)],            # HIT_05 и HIT_06 слиплись — разделяем
                  wipe=[(1300, 400, 1774, 484)]),         # подпись HIT_04 слиплась с HIT_08
+            dict(file="walk_sheet.png", anim="walk", frames=6, label_bands=[], optional=True),  # приставной шаг в стойке
+            dict(file="super_sheet.png", anim="super", frames=8, label_bands=[], optional=True),  # суперудар
             dict(file="win_sheet.png", anim="win", frames=4, label_bands=[], optional=True),  # победа — когда будет нарисована
             dict(path=BLOCK_SHEET, anim="block", frames=2, pick=0, label_bands=[]),
             dict(path=CROUCH_SHEET, anim="crouch", frames=2, pick=0, label_bands=[], scale_like="block"),

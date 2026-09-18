@@ -10,7 +10,7 @@ using UnityEngine;
 // Клипы заполняет кнопка Cat Fighter → Настроить бойцов из папки Assets/Audio (по началу имени файла).
 public class SoundManager : MonoBehaviour
 {
-    public enum Cue { Whoosh, HitLight, HitHeavy, Block, Dodge, CatHurt, KO, Round, Fight, Win, Lose }
+    public enum Cue { Whoosh, HitLight, HitHeavy, Block, Dodge, CatHurt, KO, Round, Fight, Win, Lose, Super }
 
     [Serializable]
     public class CueClips
@@ -60,6 +60,7 @@ public class SoundManager : MonoBehaviour
             f.Blocked += _ => Play(Cue.Block);
             f.Dodged += _ => Play(Cue.Dodge);
             f.Hurt += OnHurt;
+            f.SuperStarted += _ => Play(Cue.Super);
         }
     }
 

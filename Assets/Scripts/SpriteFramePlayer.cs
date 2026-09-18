@@ -27,9 +27,13 @@ public class SpriteFramePlayer : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Sprite idleSprite;            // картинка стойки — то, что стоит в Sprite Renderer на старте
     private Coroutine current;            // клип, который играет сейчас (чтобы можно было прервать)
+    private bool currentIsLoop;           // текущий клип — зацикленный (ходьба), а не разовое действие
+    private string loopKey;               // какой цикл играет сейчас ("walk>" или "walk<")
 
-    // Играет ли сейчас какой-нибудь клип. Fighter спрашивает это, чтобы не бить посреди удара.
-    public bool IsPlaying => current != null;
+    // Играет ли сейчас разовое действие (удар, падение). Fighter спрашивает это, чтобы не бить посреди удара.
+    // Зацикленная ходьба сюда не считается — она прерывается в любой момент.
+    public bool IsPlaying => current != null && !currentIsLoop;
+    public bool IsLooping => current != null && currentIsLoop;
 
     // Имя клипа, который играет сейчас (null — ничего не играет). ИИ смотрит сюда, чтобы понять, что делает противник.
     public string CurrentClip { get; private set; }
@@ -52,8 +56,51 @@ public class SpriteFramePlayer : MonoBehaviour
         }
 
         if (current != null) StopCoroutine(current); // новый клип прерывает старый (например, удар прервали попаданием)
+        currentIsLoop = false;
+        loopKey = null;
         CurrentClip = clip.name;
         current = StartCoroutine(PlayRoutine(clip, holdLastFrame));
+    }
+
+    // Крутить клип по кругу, пока не остановят (ходьба). reverse — кадры в обратном порядке (шаг назад).
+    public void PlayLoop(string clipName, bool reverse = false)
+    {
+        string key = clipName + (reverse ? "<" : ">");
+        if (IsLooping && loopKey == key) return; // уже крутится то же самое — не перезапускаем
+
+        Clip clip = clips == null ? null : System.Array.Find(clips, c => c.name == clipName);
+        if (clip == null || clip.frames.Length == 0) return;
+
+        if (current != null) StopCoroutine(current);
+        currentIsLoop = true;
+        loopKey = key;
+        CurrentClip = null; // ходьба — не "действие", ИИ на неё не реагирует
+        current = StartCoroutine(LoopRoutine(clip, reverse));
+    }
+
+    // Остановить цикл и встать в стойку
+    public void StopLoop()
+    {
+        if (!IsLooping) return;
+        StopCoroutine(current);
+        current = null;
+        currentIsLoop = false;
+        loopKey = null;
+        spriteRenderer.sprite = idleSprite;
+    }
+
+    private IEnumerator LoopRoutine(Clip clip, bool reverse)
+    {
+        float delay = 1f / (clip.framesPerSecond > 0 ? clip.framesPerSecond : 12f);
+        int n = clip.frames.Length;
+        while (true) // бесконечный цикл — выход только через StopCoroutine
+        {
+            for (int i = 0; i < n; i++)
+            {
+                spriteRenderer.sprite = clip.frames[reverse ? n - 1 - i : i];
+                yield return new WaitForSeconds(delay);
+            }
+        }
     }
 
     public bool HasClip(string clipName) =>
@@ -88,6 +135,8 @@ public class SpriteFramePlayer : MonoBehaviour
     {
         if (current != null) StopCoroutine(current);
         current = null;
+        currentIsLoop = false;
+        loopKey = null;
         CurrentClip = null;
         spriteRenderer.sprite = sprite;
     }
@@ -97,6 +146,8 @@ public class SpriteFramePlayer : MonoBehaviour
     {
         if (current != null) StopCoroutine(current);
         current = null;
+        currentIsLoop = false;
+        loopKey = null;
         CurrentClip = null;
         spriteRenderer.sprite = idleSprite;
     }
