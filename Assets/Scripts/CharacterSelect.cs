@@ -150,7 +150,10 @@ public class CharacterSelect : MonoBehaviour
 
         Label(root, "ВЫБЕРИ БОЙЦА", 110, new Color(1f, 0.75f, 0.2f), new Vector2(0, 390), new Vector2(1600, 160));
         Label(root, "VS", 140, Color.white, new Vector2(0, 40), new Vector2(300, 200));
-        Label(root, "A / D — ВЫБОР        ПРОБЕЛ / ENTER — В БОЙ!        или кликни по коту", 38, Color.white,
+        string hint = TouchControls.IsTouchDevice
+            ? "НАЖМИ НА КОТА, ЧТОБЫ ВЫБРАТЬ"
+            : "A / D — ВЫБОР        ПРОБЕЛ / ENTER — В БОЙ!        или кликни по коту";
+        Label(root, hint, 38, Color.white,
               new Vector2(0, -430), new Vector2(1600, 70));
 
         cards = new RectTransform[2];

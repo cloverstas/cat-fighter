@@ -242,6 +242,9 @@ public static class FighterSetup
         hud.ApplyModifiedProperties();
 
         SetupSound(go);
+
+        // Экранные кнопки: компонент заранее, чтобы в Inspector была галочка Always Show (проверка мышкой)
+        if (go.GetComponent<TouchControls>() == null) Undo.AddComponent<TouchControls>(go);
     }
 
     // Звук: раскладываем файлы из Assets/Audio по сигналам — по началу имени файла.

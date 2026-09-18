@@ -71,6 +71,11 @@ public class RoundManager : MonoBehaviour
         hud = GetComponent<BattleHUD>();
         if (hud == null) hud = gameObject.AddComponent<BattleHUD>(); // старый RoundManager из сцены — без HUD
         hud.Build(player, enemy, roundsToWin);
+
+        // Экранные кнопки — только на тачскрине (на ПК они сами не покажутся)
+        var touch = GetComponent<TouchControls>();
+        if (touch == null) touch = gameObject.AddComponent<TouchControls>();
+        touch.Show(player);
         if (GetComponent<SuperEffects>() == null) gameObject.AddComponent<SuperEffects>(); // кино-эффекты суперудара
         hud.SetWins(0, 0);
 

@@ -343,6 +343,7 @@ public class BattleHUD : MonoBehaviour
 
     void BuildControlsHint()
     {
+        if (TouchControls.IsTouchDevice) return; // на телефоне клавиатуры нет — вместо подсказки экранные кнопки
         var box = Box(canvasRoot, "Controls", new Vector2(0.5f, 0), new Vector2(0, 118), new Vector2(1250, 56));
         Img(box, "Back", null, new Color(0f, 0f, 0f, 0.55f));
         Label(box, ControlsHint, 26, Color.white, Vector2.zero, new Vector2(1250, 56));

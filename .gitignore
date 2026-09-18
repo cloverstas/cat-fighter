@@ -40,3 +40,8 @@ desktop.ini
 
 # Python-кэш скрипта нарезки
 __pycache__/
+
+# Временные файлы сборки WebGL (Burst) и служебные файлы тестового пакета Unity
+/[Dd]ata/
+/Assets/Resources/PerformanceTestRun*
+/Assets/Resources/PerformanceTestRun*.meta
