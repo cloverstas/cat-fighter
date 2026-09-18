@@ -1029,6 +1029,18 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 9b69bde9a13427d4ab4d96380430ea94, type: 3}
     framesPerSecond: 10
     hitFrame: 0
+  - name: super
+    frames:
+    - {fileID: 21300000, guid: 49f8820529a1b24459556e2658cf7fa3, type: 3}
+    - {fileID: 21300000, guid: fb9ee2c5bba405c47a99f8b28a4d2547, type: 3}
+    - {fileID: 21300000, guid: 140c7d9b3d94b0042b11d61310cf3c9b, type: 3}
+    - {fileID: 21300000, guid: f489e0d35c5dccf4a9fe4976c237f351, type: 3}
+    - {fileID: 21300000, guid: b9efdd4053200cb4bab8c202c9677efc, type: 3}
+    - {fileID: 21300000, guid: b70a1693158e1404cb53bc9d2b223c4f, type: 3}
+    - {fileID: 21300000, guid: 91e48a1383dfc944cafd1fe7287cd2bb, type: 3}
+    - {fileID: 21300000, guid: 47d11dfbe7abfde4e99c4b9fb7a3e598, type: 3}
+    framesPerSecond: 14
+    hitFrame: 5
 --- !u!114 &1188829080
 MonoBehaviour:
   m_ObjectHideFlags: 0

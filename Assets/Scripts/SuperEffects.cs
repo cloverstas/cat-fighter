@@ -15,6 +15,7 @@ public class SuperEffects : MonoBehaviour
 
     private BattleHUD hud;
     private SpriteRenderer background;
+    private Color normalBackground = Color.white; // обычный цвет фона (с лёгким затемнением арены)
     private Camera cam;
     private Vector3 camBase;
     private bool busy; // эффект уже идёт — второй поверх не запускаем
@@ -25,7 +26,11 @@ public class SuperEffects : MonoBehaviour
         cam = Camera.main;
         if (cam != null) camBase = cam.transform.position;
         var arena = FindAnyObjectByType<ArenaBackground>();
-        if (arena != null) background = arena.GetComponent<SpriteRenderer>();
+        if (arena != null)
+        {
+            background = arena.GetComponent<SpriteRenderer>();
+            normalBackground = arena.Tint;
+        }
 
         foreach (Fighter f in FindObjectsByType<Fighter>())
         {
@@ -61,10 +66,10 @@ public class SuperEffects : MonoBehaviour
         // Фон плавно возвращает цвет
         for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime * 3f)
         {
-            if (background != null) background.color = Color.Lerp(darkBackground, Color.white, t);
+            if (background != null) background.color = Color.Lerp(darkBackground, normalBackground, t);
             yield return null; // подождать один кадр
         }
-        if (background != null) background.color = Color.white;
+        if (background != null) background.color = normalBackground;
         busy = false;
     }
 

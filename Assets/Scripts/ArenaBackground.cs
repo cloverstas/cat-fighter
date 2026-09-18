@@ -7,15 +7,20 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class ArenaBackground : MonoBehaviour
 {
+    // Лёгкое затемнение комнаты: коты на её фоне читаются лучше. 1 — без затемнения.
+    [Range(0.5f, 1f)] [SerializeField] private float brightness = 0.85f;
+
     private SpriteRenderer sr;
     private Vector3? baseCamPos; // "?" — может быть пустым: ещё не запомнили
 
     public SpriteRenderer Renderer => sr;
+    public Color Tint => new Color(brightness, brightness, brightness); // обычный цвет фона
 
     void OnEnable()
     {
         sr = GetComponent<SpriteRenderer>();
         sr.sortingOrder = -100; // всегда позади котов
+        sr.color = Tint;
     }
 
     void LateUpdate()
