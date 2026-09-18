@@ -251,6 +251,9 @@ public class CharacterSelect : MonoBehaviour
         text.fontStyle = FontStyle.Bold;
         text.color = color;
         text.alignment = TextAnchor.MiddleCenter;
+        // Не прятать текст, если он чуть больше своей рамки (иначе Unity его просто не рисует)
+        text.horizontalOverflow = HorizontalWrapMode.Overflow;
+        text.verticalOverflow = VerticalWrapMode.Overflow;
         text.raycastTarget = false;
         var outline = go.GetComponent<Outline>();
         outline.effectColor = new Color(0f, 0f, 0f, 0.9f);

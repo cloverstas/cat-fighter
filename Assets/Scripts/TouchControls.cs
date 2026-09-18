@@ -180,6 +180,9 @@ public class TouchControls : MonoBehaviour
         text.fontStyle = FontStyle.Bold;
         text.color = Color.white;
         text.alignment = TextAnchor.MiddleCenter;
+        // Не прятать текст, если он чуть больше своей рамки (иначе Unity его просто не рисует)
+        text.horizontalOverflow = HorizontalWrapMode.Overflow;
+        text.verticalOverflow = VerticalWrapMode.Overflow;
         text.raycastTarget = false; // нажатия ловит круг, а не текст
         go.GetComponent<Outline>().effectColor = new Color(0f, 0f, 0f, 0.8f);
     }
