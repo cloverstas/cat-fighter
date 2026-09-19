@@ -29,6 +29,11 @@ public static class WebGLBuild
         PlayerSettings.defaultWebScreenHeight = 720;
         PlayerSettings.runInBackground = false;
 
+        // Без заставки "Made with Unity": минус 2.7 МБ (картинка логотипа) и ~2 с до начала игры.
+        // С Unity 6 отключается на любой лицензии, включая бесплатную.
+        PlayerSettings.SplashScreen.show = false;
+        PlayerSettings.SplashScreen.showUnityLogo = false;
+
         // Текстуры — в двух GPU-форматах. Видеокарта ПК понимает DXT, телефона — ASTC.
         // Если формат не поддерживается, Unity распакует текстуры на лету в RGBA32 —
         // игра работает, но загрузка дольше и памяти нужно в 4-8 раз больше.
