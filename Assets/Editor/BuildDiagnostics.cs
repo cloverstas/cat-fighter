@@ -34,6 +34,87 @@ public static class BuildDiagnostics
         UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
     }
 
+    // Пробная сборка с Crunch на атласах котов (только DXT) — для сравнения "до/после".
+    // Качество — из переменной окружения CF_CRUNCH_Q (0-100). Настройки атласов потом возвращаются.
+    public static void BuildCrunchPreview()
+    {
+        int q = int.Parse(System.Environment.GetEnvironmentVariable("CF_CRUNCH_Q") ?? "80");
+        string[] atlases = { "Assets/Art/Atlases/Murzik.spriteatlasv2", "Assets/Art/Atlases/Belchik.spriteatlasv2" };
+        SetCrunch(atlases, true, q);
+        try
+        {
+            EditorUserBuildSettings.webGLBuildSubtarget = WebGLTextureSubtarget.DXT;
+            AssetDatabase.Refresh();
+            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            {
+                scenes = new[] { "Assets/Scenes/SampleScene.unity" },
+                locationPathName = $"Builds/Crunch{q}",
+                target = BuildTarget.WebGL,
+                subtarget = (int)WebGLTextureSubtarget.DXT,
+            });
+            Log($"Crunch {q}: {report.summary.result}, {report.summary.totalSize / (1024f * 1024f):F1} МБ");
+        }
+        finally { SetCrunch(atlases, false, 50); }
+    }
+
+    // Образцы для сравнения Crunch: одни и те же кадры из атласа котов в вариантах
+    // "без Crunch", "Crunch 100", "Crunch 80" — декодированные видеокартой (нужен запуск без -nographics).
+    public static void ExportCrunchSamples()
+    {
+        string outDir = System.Environment.GetEnvironmentVariable("CF_SAMPLES_DIR");
+        string[] atlasPaths = { "Assets/Art/Atlases/Murzik.spriteatlasv2", "Assets/Art/Atlases/Belchik.spriteatlasv2" };
+        string[] names = { "murzik_idle_01", "murzik_super_05", "belchik_idle_01", "belchik_super_05" };
+        EditorUserBuildSettings.webGLBuildSubtarget = WebGLTextureSubtarget.DXT;
+        var variants = new (string label, bool on, int q)[] { ("off", false, 50), ("c100", true, 100), ("c80", true, 80) };
+        try
+        {
+            foreach (var v in variants)
+            {
+                SetCrunch(atlasPaths, v.on, v.q);
+                var atlases = atlasPaths.Select(AssetDatabase.LoadAssetAtPath<UnityEngine.U2D.SpriteAtlas>).ToArray();
+                UnityEditor.U2D.SpriteAtlasUtility.PackAtlases(atlases, BuildTarget.WebGL, false);
+                foreach (var atlas in atlases)
+                {
+                    var sprites = new Sprite[atlas.spriteCount];
+                    atlas.GetSprites(sprites);
+                    foreach (var sp in sprites)
+                    {
+                        string n = sp.name.Replace("(Clone)", "");
+                        if (!names.Contains(n)) continue;
+                        var page = UnityEditor.Sprites.SpriteUtility.GetSpriteTexture(sp, true);
+                        var uv = UnityEditor.Sprites.SpriteUtility.GetSpriteUVs(sp, true);
+                        float x0 = uv.Min(u => u.x), x1 = uv.Max(u => u.x), y0 = uv.Min(u => u.y), y1 = uv.Max(u => u.y);
+                        var rt = RenderTexture.GetTemporary(page.width, page.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+                        Graphics.Blit(page, rt);
+                        RenderTexture.active = rt;
+                        int px = Mathf.FloorToInt(x0 * page.width), py = Mathf.FloorToInt(y0 * page.height);
+                        int w = Mathf.CeilToInt(x1 * page.width) - px, h = Mathf.CeilToInt(y1 * page.height) - py;
+                        var crop = new Texture2D(w, h, TextureFormat.RGBA32, false);
+                        crop.ReadPixels(new Rect(px, py, w, h), 0, 0);
+                        RenderTexture.active = null;
+                        RenderTexture.ReleaseTemporary(rt);
+                        System.IO.File.WriteAllBytes($"{outDir}/{n}_{v.label}.png", crop.EncodeToPNG());
+                        Log($"{n} {v.label}: страница {page.width}x{page.height} {page.format}, кусок {w}x{h}");
+                    }
+                }
+            }
+        }
+        finally { SetCrunch(atlasPaths, false, 50); }
+    }
+
+    static void SetCrunch(string[] paths, bool on, int quality)
+    {
+        foreach (string path in paths)
+        {
+            var importer = (UnityEditor.U2D.SpriteAtlasImporter)AssetImporter.GetAtPath(path);
+            var ps = importer.GetPlatformSettings("DefaultTexturePlatform");
+            ps.crunchedCompression = on;
+            ps.compressionQuality = quality;
+            importer.SetPlatformSettings(ps);
+            importer.SaveAndReimport();
+        }
+    }
+
     [MenuItem("Cat Fighter/Диагностика сборки")]
     public static void Run()
     {
