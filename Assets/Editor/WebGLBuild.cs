@@ -21,9 +21,10 @@ public static class WebGLBuild
 
     static void Build(string outputFolder, BuildOptions buildOptions, bool withAstc)
     {
-        // Сжатие Gzip + Decompression Fallback: браузер сам распакует файлы.
-        // Так игра работает на любом хостинге, даже без настройки сервера (например, GitHub Pages).
-        PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
+        // Сжатие Brotli (на 15-20% меньше Gzip) + Decompression Fallback: если сервер не отдаёт
+        // заголовок "Content-Encoding: br" (GitHub Pages не отдаёт), файлы распакует загрузчик Unity на JS.
+        // Так игра работает на любом хостинге, даже без настройки сервера.
+        PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Brotli;
         PlayerSettings.WebGL.decompressionFallback = true;
         PlayerSettings.WebGL.dataCaching = true;               // повторный заход — быстрее, файлы в кэше браузера
         PlayerSettings.defaultWebScreenWidth = 1280;
