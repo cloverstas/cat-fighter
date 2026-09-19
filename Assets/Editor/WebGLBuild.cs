@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
@@ -33,6 +34,19 @@ public static class WebGLBuild
         // С Unity 6 отключается на любой лицензии, включая бесплатную.
         PlayerSettings.SplashScreen.show = false;
         PlayerSettings.SplashScreen.showUnityLogo = false;
+
+        // Код (wasm) — на размер, а не на скорость сборки:
+        // Managed Stripping — IL2CPP выкидывает C#-код, до которого игра не дотягивается.
+        // Medium — надёжно; High режет сильнее, но может задеть то, что вызывается через
+        // рефлексию (Input System), — тогда понадобился бы link.xml.
+        var webGL = NamedBuildTarget.WebGL;
+        PlayerSettings.SetManagedStrippingLevel(webGL, ManagedStrippingLevel.Medium);
+        PlayerSettings.stripEngineCode = true; // вырезать неиспользуемые модули движка (физика 3D, ткань и т.п.)
+        // IL2CPP переводит C# в C++: "Optimize Size" — меньше сгенерированного кода
+        PlayerSettings.SetIl2CppCodeGeneration(webGL, Il2CppCodeGeneration.OptimizeSize);
+        // Компилятор wasm: оптимизация на размер + LTO (оптимизация всей программы при линковке).
+        // Сборка дольше, файл меньше и работает быстрее.
+        UnityEditor.WebGL.UserBuildSettings.codeOptimization = UnityEditor.WebGL.WasmCodeOptimization.DiskSizeLTO;
 
         // Текстуры — в двух GPU-форматах. Видеокарта ПК понимает DXT, телефона — ASTC.
         // Если формат не поддерживается, Unity распакует текстуры на лету в RGBA32 —
