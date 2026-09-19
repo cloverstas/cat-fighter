@@ -56,11 +56,23 @@
         updateBannerVisibility();
       }
 
+      function catFighterDataUrl(buildUrl) {
+        // Выбор набора текстур под видеокарту: DXT (ПК) или ASTC (телефоны)
+        // Для проверки можно выбрать вручную: index.html?textures=astc или ?textures=dxt
+        var forced = new URLSearchParams(location.search).get("textures");
+        if (forced === "astc") return buildUrl + "/WebGL.astc.data.unityweb";
+        if (forced === "dxt") return buildUrl + "/WebGL.data.unityweb";
+        var gl = document.createElement("canvas").getContext("webgl2");
+        if (!gl) return buildUrl + "/WebGL.data.unityweb";
+        if (gl.getExtension("WEBGL_compressed_texture_s3tc")) return buildUrl + "/WebGL.data.unityweb";
+        if (gl.getExtension("WEBGL_compressed_texture_astc")) return buildUrl + "/WebGL.astc.data.unityweb";
+        return buildUrl + "/WebGL.data.unityweb";
+      }
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/WebGL.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/WebGL.data.unityweb",
+        dataUrl: catFighterDataUrl(buildUrl),
         frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
         codeUrl: buildUrl + "/WebGL.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
