@@ -25,6 +25,15 @@ public static class BuildDiagnostics
         EditorUserBuildSettings.webGLBuildSubtarget = WebGLTextureSubtarget.DXT;
     }
 
+    // Проверка "Настроить бойцов" из batchmode: открыть сцену, настроить, сохранить.
+    // Если после этого git diff сцены пуст — все ссылки на спрайты остались прежними.
+    public static void RunFighterSetup()
+    {
+        UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");
+        FighterSetup.SetupAll();
+        UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
+    }
+
     [MenuItem("Cat Fighter/Диагностика сборки")]
     public static void Run()
     {
