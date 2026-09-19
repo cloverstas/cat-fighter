@@ -73,7 +73,8 @@ public class ArtImportSettings : AssetPostprocessor
         return true;
     }
 
-    static bool IsLargeUI(TextureImporter importer)
+    // Используется и в AtlasSetup: крупный UI в атлас не кладём
+    public static bool IsLargeUI(TextureImporter importer)
     {
         if (!importer.assetPath.StartsWith("Assets/Art/UI/")) return false;
         importer.GetSourceTextureWidthAndHeight(out int w, out int h);

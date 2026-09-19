@@ -44,6 +44,18 @@ public static class BuildDiagnostics
                      .GroupBy(p => AssetDatabase.LoadAssetAtPath<Texture2D>(p).format))
             Log($"формат {group.Key}: {group.Count()} шт. — {string.Join(", ", group.Take(6).Select(System.IO.Path.GetFileName))}{(group.Count() > 6 ? ", ..." : "")}");
 
+        // Страницы атласов: размер и формат (должны быть 2^n и сжаты)
+        var atlases = AssetDatabase.FindAssets("t:SpriteAtlas").Select(g => AssetDatabase.LoadAssetAtPath<UnityEngine.U2D.SpriteAtlas>(AssetDatabase.GUIDToAssetPath(g))).ToArray();
+        UnityEditor.U2D.SpriteAtlasUtility.PackAtlases(atlases, EditorUserBuildSettings.activeBuildTarget, false);
+        foreach (var atlas in atlases)
+        {
+            var sprites = new Sprite[atlas.spriteCount];
+            atlas.GetSprites(sprites);
+            var pages = sprites.Select(sp => UnityEditor.Sprites.SpriteUtility.GetSpriteTexture(sp, true)).Where(t => t != null).Distinct().ToArray();
+            Log($"атлас {atlas.name}: {atlas.spriteCount} спрайтов, страниц {pages.Length}: " +
+                string.Join("; ", pages.Select(t => $"{t.width}x{t.height} {t.format} mips={t.mipmapCount}")));
+        }
+
         foreach (string path in Samples)
         {
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
