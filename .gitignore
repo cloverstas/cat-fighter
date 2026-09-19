@@ -45,3 +45,6 @@ __pycache__/
 /[Dd]ata/
 /Assets/Resources/PerformanceTestRun*
 /Assets/Resources/PerformanceTestRun*.meta
+
+# Логи браузерных тестов (Playwright MCP)
+.playwright-mcp/
